@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>OCP Upgrade Preparation :: LAB - Telco OCP Upgrade Lab</title>
     <link rel="canonical" href="https://labs.sysdeseng.com/4.12-4.14/OCP-upgrade-prep.html">
+    <link rel="prev" href="CNF-Upgrade-Prep.html">
+    <link rel="next" href="Applying-MCPs.html">
     <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
@@ -83,6 +85,42 @@
   </li>
 </ul>
   </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="CNF-Upgrade-Prep.html">CNF Upgrade Preparation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="CNF-Upgrade-Prep.html#life-of-a-pod">Life of a POD</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="CNF-Upgrade-Prep.html#cnf-req-doc">CNF Requirements Document</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="CNF-Upgrade-Prep.html#pdb">POD Disruption Budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="CNF-Upgrade-Prep.html#pod-anti-affinity">POD Anti-affinity</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="OCP-upgrade-prep.html">OCP Upgrade Preparation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#firmware-compatibility">Firmware compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#layer-product-compatibility">Layer product compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#prepare-mcp">Prepare MCPs</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Applying-MCPs.html">Applying MCPs</a>
+  </li>
 </ul>
   </li>
 </ul>
@@ -155,9 +193,9 @@ These MCPs will be used to un-pause a set of nodes during the upgrade process, t
 rebooted at a determined time instead of at the pleasure of the scheduler. Please review the upgrade process flow
 section, below, for more details on the pause/un-pause process.</p>
 </div>
-<div class="imageblock unresolved">
+<div class="imageblock">
 <div class="content">
-<img src="../assets/images/5Rack-MCP.jpg" alt="5Rack MCP">
+<img src="_images/5Rack-MCP.jpg" alt="5Rack MCP">
 </div>
 <div class="title">Figure 1. Worker node MCPs in a 5 rack cluster</div>
 </div>
@@ -165,9 +203,9 @@ section, below, for more details on the pause/un-pause process.</p>
 <p>The division and size of these MCPs can vary depending on many factors. In general the standard division is between 8
 and 10 nodes per MCP to allow the operations team to control how many nodes are taken down at a time.</p>
 </div>
-<div class="imageblock unresolved">
+<div class="imageblock">
 <div class="content">
-<img src="../assets/images/LBorHT-MCP.jpg" alt="LBorHT MCP">
+<img src="_images/LBorHT-MCP.jpg" alt="LBorHT MCP">
 </div>
 <div class="title">Figure 2. Separate MCPs inside of a group of Load Balancer or purpose built nodes</div>
 </div>
@@ -177,9 +215,9 @@ high throughput purposes, which usually have different machine sets to configure
 to upgrade all of these nodes without getting a chance to test during the upgrade. Therefore, we need to separate them
 out into at least 3 different MCPs and unpause them individually.</p>
 </div>
-<div class="imageblock unresolved">
+<div class="imageblock">
 <div class="content">
-<img src="../assets/images/Worker-MCP.jpg" alt="Worker MCP">
+<img src="_images/Worker-MCP.jpg" alt="Worker MCP">
 </div>
 <div class="title">Figure 3. Small cluster worker MCPs</div>
 </div>
@@ -196,6 +234,10 @@ anti-affinity correctly configured will help in the long run.</p>
 </div>
 </div>
 </div>
+<nav class="pagination">
+  <span class="prev"><a href="CNF-Upgrade-Prep.html">CNF Upgrade Preparation</a></span>
+  <span class="next"><a href="Applying-MCPs.html">Applying MCPs</a></span>
+</nav>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>

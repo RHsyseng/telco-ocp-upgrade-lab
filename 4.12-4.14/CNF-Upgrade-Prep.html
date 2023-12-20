@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>CNF Upgrade Preparation :: LAB - Telco OCP Upgrade Lab</title>
     <link rel="canonical" href="https://labs.sysdeseng.com/4.12-4.14/CNF-Upgrade-Prep.html">
+    <link rel="prev" href="API-Compatibility.html">
+    <link rel="next" href="OCP-upgrade-prep.html">
     <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
@@ -83,6 +85,42 @@
   </li>
 </ul>
   </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="CNF-Upgrade-Prep.html">CNF Upgrade Preparation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#life-of-a-pod">Life of a POD</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#cnf-req-doc">CNF Requirements Document</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#pdb">POD Disruption Budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#pod-anti-affinity">POD Anti-affinity</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="OCP-upgrade-prep.html">OCP Upgrade Preparation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="OCP-upgrade-prep.html#firmware-compatibility">Firmware compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="OCP-upgrade-prep.html#layer-product-compatibility">Layer product compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="OCP-upgrade-prep.html#prepare-mcp">Prepare MCPs</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="Applying-MCPs.html">Applying MCPs</a>
+  </li>
 </ul>
   </li>
 </ul>
@@ -114,7 +152,24 @@ keeping your CNF PODs healthy and allow the cluster to properly schedule them du
 </div>
 </div>
 <div class="sect1">
-<h2 id="_cnf_requirements_document"><a class="anchor" href="#_cnf_requirements_document"></a>CNF Requirements Document</h2>
+<h2 id="life-of-a-pod"><a class="anchor" href="#life-of-a-pod"></a>Life of a POD</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Why is this important?</p>
+</div>
+<div class="paragraph">
+<p>Pods don’t move or reboot. Pods are deleted and a new pod takes its place.</p>
+</div>
+<div class="paragraph">
+<p>There isn’t (or shouldn’t be) a single pod with it’s own set of specifications but instead it should have lots of other pods that are the exact same in a group, called a deployment. A deployment should spread the workload across all of the pods.</p>
+</div>
+<div class="paragraph">
+<p>This is specified because we need to move away from the idea that each and every single pod needs to be cared for like it is that only strand holding things together. The old saying goes, a rope is made up of many strands, which is what makes it stronger than any single strand.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="cnf-req-doc"><a class="anchor" href="#cnf-req-doc"></a>CNF Requirements Document</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Before you go any further, please read through the <a href="https://connect.redhat.com/sites/default/files/2022-05/Cloud%20Native%20Network%20Function%20Requirements%201-3.pdf">CNF requirements document</a>.
@@ -124,43 +179,42 @@ detail and other important topics.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_pod_disruption_budget"><a class="anchor" href="#_pod_disruption_budget"></a>POD Disruption Budget</h2>
+<h2 id="pdb"><a class="anchor" href="#pdb"></a>POD Disruption Budget</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Each set of PODs in a deployment can be given a specific minimum number of PODs that should be running in order to keep
-from disrupting the functionality of the CNF, thus called the POD disruption budget (PDB). However, this budget can be
-improperly configured. <br>
-For example, if you have 4 PODs in a deployment and your PDB is set to 4, this means that you are telling the scheduler
-that you NEED 4 PODs running at all times. Therefore, in this scenario ZERO PODs can come down.</p>
+<p>Each set of PODs in a deployment can be given a specific minimum number of PODs that should be running in order to keep from disrupting the functionality of the CNF, thus called the POD disruption budget (PDB). However, this budget can be improperly configured.</p>
 </div>
-<div class="imageblock unresolved">
+<div class="paragraph">
+<p>For example, if you have 4 PODs in a deployment and your PDB is set to 4, this means that you are telling the scheduler that you NEED 4 PODs running at all times. Therefore, in this scenario ZERO PODs can come down.</p>
+</div>
+<div class="imageblock">
 <div class="content">
-<img src="../assets/images/PDB-full.jpg" alt="PDB full">
+<img src="_images/PDB-full.jpg" alt="PDB full">
 </div>
 <div class="title">Figure 1. Deployment with no PDB</div>
 </div>
 <div class="paragraph">
-<p>To fix this, the PDB can be set to 2, letting 2 of the 4 pods to be scheduled as down and this would then let the worker
-nodes where those PODs are located be rebooted.</p>
+<p>To fix this, the PDB can be set to 2, letting 2 of the 4 PODs to be scheduled as down and this would then let the worker nodes where those PODs are located be rebooted.</p>
 </div>
-<div class="imageblock unresolved">
+<div class="paragraph">
+<p>This does NOT mean that your deployment will be running on only 2 pods for a period of time. This means that 2 new pods can be created to replace 2 current pods and there can be a short period of time as the new pods come online and the old pods are deleted.</p>
+</div>
+<div class="imageblock">
 <div class="content">
-<img src="../assets/images/PDB-down-2.jpg" alt="PDB down 2">
+<img src="_images/PDB-down-2.jpg" alt="PDB down 2">
 </div>
 <div class="title">Figure 2. Deployment with PDB</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_pod_anti_affinity"><a class="anchor" href="#_pod_anti_affinity"></a>POD Anti-affinity</h2>
+<h2 id="pod-anti-affinity"><a class="anchor" href="#pod-anti-affinity"></a>POD Anti-affinity</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>True high availability requires a duplication of a process to be running on separate hardware, thus making sure that an
-application will continue to run if one piece of hardware goes down. OpenShift can easily make that happen since
-processes are automatically duplicated in separate PODs within a deployment. However, those PODs need to have
-anti-affinity set on them so that they are NOT running on the same hardware. It so happens that anti-affinity also
-helps during upgrades because it makes sure that PODs are on different worker nodes, therefore allowing enough PODs to
-come down even after considering their PDB.</p>
+<p>True high availability requires a duplication of a process to be running on separate hardware, thus making sure that an application will continue to run if one piece of hardware goes down. OpenShift can easily make that happen since processes are automatically duplicated in separate PODs within a deployment. However, those PODs need to have anti-affinity set on them so that they are NOT running on the same hardware.</p>
+</div>
+<div class="paragraph">
+<p>During an upgrade anti-affinity is important so that there aren’t too many pods on a node when it is time for it to reboot. For example: if there are 4 pods from a single deployment on a node, and the PDB is set to only allow 1 pod be deleted at a time, then it will take 4 times a long for that node to reboot because it will be waiting on all 4 pods to be deleted.</p>
 </div>
 </div>
 </div>
@@ -176,6 +230,10 @@ on how to implement their use.</p>
 </div>
 </div>
 </div>
+<nav class="pagination">
+  <span class="prev"><a href="API-Compatibility.html">OCP API Compatibility Policy</a></span>
+  <span class="next"><a href="OCP-upgrade-prep.html">OCP Upgrade Preparation</a></span>
+</nav>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
   <div class="toc-menu"></div>
