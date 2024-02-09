@@ -172,7 +172,7 @@ keeping your CNF PODs healthy and allow the cluster to properly schedule them du
 <h2 id="cnf-req-doc"><a class="anchor" href="#cnf-req-doc"></a>CNF Requirements Document</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Before you go any further, please read through the <a href="https://connect.redhat.com/sites/default/files/2022-05/Cloud%20Native%20Network%20Function%20Requirements%201-3.pdf">CNF requirements document</a>.
+<p>Before you go any further, please read through the <a href="https://test-network-function.github.io/cnf-best-practices-guide/">CNF requirements document</a>.
 In this section a few of the most important points will be discussed but the CNF Requirements Document has additional
 detail and other important topics.</p>
 </div>
@@ -219,11 +219,11 @@ detail and other important topics.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_liveness_readiness_probes"><a class="anchor" href="#_liveness_readiness_probes"></a>Liveness / Readiness Probes</h2>
+<h2 id="_liveness_readiness_startup_probes"><a class="anchor" href="#_liveness_readiness_startup_probes"></a>Liveness / Readiness / Startup Probes</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>OpenShift and Kubernetes have some built in features that not everyone takes advantage of called
-<a href="https://docs.openshift.com/container-platform/4.12/applications/application-health.html">liveness and readiness probes</a>.
+<a href="https://docs.openshift.com/container-platform/4.12/applications/application-health.html">liveness, readiness and startup probes</a>.
 These are very important when POD deployments are dependent upon keeping state for their application. This document
 won’t go into detail regarding these probes but please review the <a href="https://docs.openshift.com/container-platform/4.12/applications/application-health.html">OpenShift documentation</a>
 on how to implement their use.</p>

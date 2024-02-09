@@ -147,13 +147,18 @@
 <h2 id="firmware-compatibility"><a class="anchor" href="#firmware-compatibility"></a>Firmware compatibility</h2>
 <div class="sectionbody">
 <div class="paragraph">
+<p>Firmware is NOT part of the OpenShift upgrade and can not be controlled through OpenShift. However, in Telco we run most of our clusters on baremetal which means that we need to be very mindful of the firmware level on all of our hardware.</p>
+</div>
+<div class="paragraph">
 <p>All hardware vendors will advise that it is always best to be on their latest certified version of firmware for their
 hardware. In the telco world this comes with a trust but verify approach due to the high throughput nature of telco
 CNFs. Therefore, it is important to have a regimented group who can test the current and latest firmware from any vendor
 to make sure that all components will work with both. It is not always recommended to upgrade firmware in conjunction
 with an OCP upgrade however if it is possible to test the latest release of firmware that will improve the odds that
-you won’t run into issues down the road.<br>
-Upgrading firmware is a very important debate because the process can be very intrusive and has a potential for causing
+you won’t run into issues down the road.</p>
+</div>
+<div class="paragraph">
+<p>Upgrading firmware is a very important debate because the process can be very intrusive and has a potential for causing
 a node to require manual interventions before the node will come back online. On the other hand it may be imperative to
 upgrade the firmware due to security fixes, new required functionality or compatibility with the new release of OCP
 components. Therefore, it is up to everyone to verify with their hardware vendors, verify compatibility with OCP
@@ -179,19 +184,66 @@ chapter2                               gitlab-operator-kubernetes.v0.17.2   GitL
 openshift-operator-lifecycle-manager   packageserver                        Package Server   0.19.0                                         Succeeded</code></pre>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_olm_operator_compatibility"><a class="anchor" href="#_olm_operator_compatibility"></a>OLM Operator compatibility</h3>
+<div class="paragraph">
+<p>There is a set of Red Hat Operators that are NOT part of the cluster operators which are otherwise known as the OLM installed operators. To determine the compatibility of these OLM installed operators there is a great web based tool that can be used to determine which versions of OCP are compatible with specific releases of an Operator. This tool is meant to tell you if you need to upgrade an Operator after each Y-Stream upgrade or if you can wait until you have fully upgraded to the next EUS release.
+In Step 9 under the “Upgrade Process Flow” section you will find additional information regarding what you need to do if an Operator needs to be upgraded after performing the first Y-Stream Control Plane upgrade.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Some Operators are compatible with several releases of OCP. So, you may not need to upgrade until you complete the cluster upgrade. This is shown in Step 13 of the Upgrade Process Flow.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_non_red_hat_olm_operators"><a class="anchor" href="#_non_red_hat_olm_operators"></a>Non-Red Hat OLM Operators</h3>
+<div class="paragraph">
+<p>For all OLM installed Operators that are NOT directly supported by Red Hat, please contact the supporting vendor to make sure of release compatibility.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="prepare-mcp"><a class="anchor" href="#prepare-mcp"></a>Prepare MCPs</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Prepare your Machine Config Pool (MCP) labels by grouping your nodes, depending on the number of nodes in your cluster.
-MCPs should be split up into 8 to 10 nodes per group. However, there is no hard fast rule as to how many nodes need to
-be in each MCP. The purpose of these MCPs is to group nodes together so that a group of nodes can be controlled
-independently of the rest. Additional information and examples can be found <a href="https://docs.openshift.com/container-platform/4.12/updating/update-using-custom-machine-config-pools.html">here, under the canary rollout documentation</a>.<br>
-These MCPs will be used to un-pause a set of nodes during the upgrade process, thus allowing them to be upgraded and
-rebooted at a determined time instead of at the pleasure of the scheduler. Please review the upgrade process flow
-section, below, for more details on the pause/un-pause process.</p>
+<p>Prepare your Machine Config Pool (MCP) labels by grouping your nodes, depending on the number of nodes in your cluster. MCPs should be split up into 8 to 10 nodes per group. However, there is no hard fast rule as to how many nodes need to be in each MCP. The purpose of these MCPs is to group nodes together so that the upgrade and reboot of a group of nodes can be controlled independently of the rest. Additional information and examples can be found here, under the <a href="https://docs.openshift.com/container-platform/4.14/updating/updating_a_cluster/eus-eus-update.html#updating-eus-to-eus-upgrade-cli_eus-to-eus-update">EUS to EUS upgrade documentation</a>.
+These MCPs will be used to un-pause a set of nodes during the upgrade process, thus allowing them to be upgraded and rebooted at a determined time instead of at the pleasure of the scheduler. Please review the upgrade process flow section, below, for more details on the pause/un-pause process.</p>
+</div>
+<div class="sect2">
+<h3 id="what-purpose-upgrade-some"><a class="anchor" href="#what-purpose-upgrade-some"></a>What is the purpose of only upgrading some nodes?</h3>
+<div class="paragraph">
+<p>During an upgrade there is always a chance that there will be a problem. Most often the problem is related to hardware failure or needing to be reset. If a problem were to occur, having a set of MCPs in a paused state allows the cluster administrator to make sure there are enough nodes running at all times to keep all applications running. The most important thing is to make sure there are enough resources for all application pods.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_should_worker_nodes_be_divided_into_mcps"><a class="anchor" href="#_how_should_worker_nodes_be_divided_into_mcps"></a>How should worker nodes be divided into MCPs?</h3>
+<div class="paragraph">
+<p>This can vary depending on how many nodes are in the cluster or how many nodes are in a node role. By default the 2 roles in a cluster are master and worker. However, in Telco clusters we quite often split the worker nodes out into 2 separate roles of control plane and data plane. The most important thing is to add MCPs to split out the nodes in each of these two groups.</p>
+</div>
+<div class="paragraph">
+<p>For example:<br>
+We have 15 worker nodes in a cluster<br>
+10 worker nodes are in the control plane role<br>
+5 worker nodes are in the data plane role<br></p>
+</div>
+<div class="paragraph">
+<p>In this cluster you should split both the CNF control plane and data plane worker node roles into at least 2 MCPs.<br>
+The advantage is that having 2 MCPs will allow you to have one set of nodes that are not affected by the upgrade if you need a stopping point.</p>
+</div>
+<div class="paragraph">
+<p>An example of a larger cluster might have as many as 100 worker nodes in the control plane role. In this case you would want to make sure that you keep each MCP to around 10 nodes. This will allow you to either unpause multiple MCPs at a time to speed up the upgrade or allow you to separate out the upgrade over at least 2 maintenance windows.</p>
+</div>
+<div class="paragraph">
+<p>Here is a depiction of what this would look like:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -200,20 +252,18 @@ section, below, for more details on the pause/un-pause process.</p>
 <div class="title">Figure 1. Worker node MCPs in a 5 rack cluster</div>
 </div>
 <div class="paragraph">
-<p>The division and size of these MCPs can vary depending on many factors. In general the standard division is between 8
-and 10 nodes per MCP to allow the operations team to control how many nodes are taken down at a time.</p>
+<p>The division and size of these MCPs can vary depending on many factors. In general the standard division in large clusters is between 8 and 10 nodes per MCP to allow the operations team to control how many nodes are taken down at a time.</p>
+</div>
+<div class="paragraph">
+<p>Here is another example but with a medium cluster.<br>
+There are a total of 6 nodes in this role. The MCPs inside of this role are split into 2 node MCPs.
+The smaller MCPs allow 2 nodes to be upgraded which can then sit through a day to allow for verification of CNF compatibility before completing the upgrade on the other 4 nodes.</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="_images/LBorHT-MCP.jpg" alt="LBorHT MCP">
 </div>
-<div class="title">Figure 2. Separate MCPs inside of a group of Load Balancer or purpose built nodes</div>
-</div>
-<div class="paragraph">
-<p>In larger clusters there is quite often a need to separate out several nodes for purposes like Load Balancing or other
-high throughput purposes, which usually have different machine sets to configure SR-IOV. In these cases we do not want
-to upgrade all of these nodes without getting a chance to test during the upgrade. Therefore, we need to separate them
-out into at least 3 different MCPs and unpause them individually.</p>
+<div class="title">Figure 2. Separate MCPs in a medium cluster into 3 MCPs</div>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -222,15 +272,214 @@ out into at least 3 different MCPs and unpause them individually.</p>
 <div class="title">Figure 3. Small cluster worker MCPs</div>
 </div>
 <div class="paragraph">
-<p>Smaller cluster example with 1 rack</p>
+<p>The process and pace at which you un-pause the MCPs is determined by your CNFs and their configuration. Please review the sections on PDB and anti-affinity for CNFs. If your CNF can properly handle scheduling within an OpenShift cluster you can un-pause several MCPs at a time and set the MaxUnavailable to as high as 50%. This will allow as many as half of the nodes in an MCPs to restart and upgrade. This will reduce the amount of time that is needed for a specific maintenance window and allow your cluster to upgrade quickly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_review_your_cluster_for_available_mcps_and_nodes"><a class="anchor" href="#_review_your_cluster_for_available_mcps_and_nodes"></a>Review your cluster for available MCPs and nodes</h3>
+<div class="paragraph">
+<p>First you can run “oc get mcp” to show your current list of MCPs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># oc get mcp
+NAME     CONFIG  UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
+master   rendered-master-b…e83   True      False      False      3              3                   3
+0                      25d
+worker   rendered-worker-2….c4f   True      False      False      2              2                   2
+ 0                      25d</code></pre>
+</div>
 </div>
 <div class="paragraph">
-<p>The process and pace at which you un-pause the MCPs is determined by your CNFs and their configuration. Please review
-the sections on PDB and anti-affinity for CNFs. If your CNF can properly handle scheduling within an OpenShift cluster
-you can un-pause several MCPs at a time and set the MaxUnavailable to as high as 50%. This will allow as many as half
-of the nodes in your MCPs to restart and upgrade. This will reduce the amount of time that is needed for a specific
-maintenance window and allow your cluster to upgrade quickly. Hopefully you can see how keeping your PDB and
-anti-affinity correctly configured will help in the long run.</p>
+<p>Now list out all of the nodes in your cluster:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Review what is listed in the “ROLES” column, this will get updated as we move through this process.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># oc get no
+NAME                                           STATUS   ROLES    AGE   VERSION
+euschannel-ctlplane-0.test.corp   Ready    master   25d   v1.23.12+8a6bfe4
+euschannel-ctlplane-1.test.corp   Ready    master   25d   v1.23.12+8a6bfe4
+euschannel-ctlplane-2.test.corp   Ready    master   25d   v1.23.12+8a6bfe4
+euschannel-worker-0.test.corp     Ready    worker   25d   v1.23.12+8a6bfe4
+euschannel-worker-1.test.corp     Ready    worker   25d   v1.23.12+8a6bfe4</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Determine, from the above suggestions, how you would like to separate out your worker nodes into machine config pools (MCP).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_create_your_mcps"><a class="anchor" href="#_create_your_mcps"></a>Create your MCPs</h3>
+<div class="paragraph">
+<p>This is a 2 step process:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>We add a MCP label to each node</p>
+</li>
+<li>
+<p>We apply an MCP to the cluster which will organize the nodes based on their labels</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In the following example there are only 2 nodes and 2 MCPs. Therefore, each MCP only has 1 node in each.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_labeling_nodes"><a class="anchor" href="#_labeling_nodes"></a>Labeling nodes</h4>
+<div class="paragraph">
+<p>We first need to label the nodes so that they can be put into MCPs. We will do this with the following commands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc label node euschannel-worker-0.test.corp node-role.kubernetes.io/mcp-1=
+oc label node euschannel-worker-1.test.corp node-role.kubernetes.io/mcp-2=</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The labels will show up when you run the “oc get node” command:
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># oc get no
+NAME                                STATUS   ROLES          AGE   VERSION
+euschannel-ctlplane-0.test.corp   Ready    master         25d   v1.23.12+8a6bfe4
+euschannel-ctlplane-1.test.corp   Ready    master         25d   v1.23.12+8a6bfe4
+euschannel-ctlplane-2.test.corp   Ready    master         25d   v1.23.12+8a6bfe4
+euschannel-worker-0.test.corp     Ready    mcp-1,worker   25d   v1.23.12+8a6bfe4
+euschannel-worker-1.test.corp     Ready    mcp-2,worker   25d   v1.23.12+8a6bfe4</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applying_mcps_according_to_label"><a class="anchor" href="#_applying_mcps_according_to_label"></a>Applying MCPs according to label</h4>
+<div class="paragraph">
+<p>Now you need to create yaml files that will apply the labels as MCPs in your cluster. Each MCP will have to have a separate file or a separate section (as it is shown below).</p>
+</div>
+<div class="paragraph">
+<p>Here is one example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: mcp-2
+spec:
+  machineConfigSelector:
+    matchExpressions:
+      - {
+         key: machineconfiguration.openshift.io/role,
+         operator: In,
+         values: [worker,mcp-2]
+        }
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/mcp-2: ""
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: mcp-1
+spec:
+  machineConfigSelector:
+    matchExpressions:
+      - {
+         key: machineconfiguration.openshift.io/role,
+         operator: In,
+         values: [worker,mcp-1]
+        }
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/mcp-1: ""</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Apply or create the MCPs through:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># oc apply -f mcps.yaml
+machineconfigpool.machineconfiguration.openshift.io/mcp-2 created</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_monitor_mcp_formation"><a class="anchor" href="#_monitor_mcp_formation"></a>Monitor MCP formation</h4>
+<div class="paragraph">
+<p>Now you can run “oc get mcp” again and your new MCPs will show. It will take a few minutes for your nodes to move into the new MCPs that they are assigned to. However, the nodes will NOT reboot during this time.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+You will still see the original worker and master MCPs that are part of the cluster.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>This is what it will look like right after you apply the MCPs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># oc get mcp
+NAME     CONFIG      UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
+master   rendered-master-b…e83   True      False      False      3              3                 3                     0                      25d
+mcp-1    rendered-mcp-1-2…c4f    False     True       True       1              0                 0                     0                      10s
+mcp-2    rendered-mcp-2-2…c4f    False     True       True       1              0                 0                     0                      10s
+worker   rendered-worker-2…c4f   False     True       True       0              0                 0                     2                      25d</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is what it will look like after the MCPs have been completely applied:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># oc get mcp
+NAME     CONFIG     UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
+master   rendered-master-b…e83   True      False      False      3              3                 3                     0                      25d
+mcp-1    rendered-mcp-1-2…c4f    True      False      False      1              1                 1                     0                      7m33s
+mcp-2    rendered-mcp-2-2…c4f    True      False      False      1              1                 1                     0                      51s
+worker   rendered-worker-2…c4f   True      False      False      0              0                 0                     0                      25d</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </div>
